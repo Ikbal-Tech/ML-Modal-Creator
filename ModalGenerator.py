@@ -1,4 +1,5 @@
 import json
+from operator import index
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras import layers
@@ -50,27 +51,24 @@ def readAndParse(jsonFilePath):
         arrayOfArrays = []
         for key, value in data.items():
             # array with 15 elements
-            array = [-1, -1, -1, -1, -1, -1, -
-                     1, -1, -1, -1, -1, -1, -1, -1, -1]
+            array = [-1, -1, -1, -1, -1, -1,
+                     -1, -1, -1, -1, -1, -1, -1, -1]
             indexValue = 0
-            firstVal = None
+            colorVal = None
             for key2, value2 in value.items():
                 indexValue = keyValueDecomposition(key2)
                 if(indexValue == 0):
-                    firstVal = value2
+                    continue
+                if(indexValue == 15):
+                    colorVal = value2   
                 if(indexValue == -1):  # This is the key value of id and it will be ignored
-                    array.pop(14)  # Removing dummy element
-                    array.insert(0, firstVal)  # Adding first value at the end
+                    array.append(colorVal)  # Adding first value at the end
                     break
                 array.insert(indexValue, value2)
-                if(indexValue == 15):
-                    array.insert(indexValue, value2)
-                    array.pop(indexValue-1)
-                    continue
-                else:
-                    array.pop(indexValue-1)
+                array.pop(indexValue-1)
 
             arrayOfArrays.append(array)
+            # break
 
     print("Done reading json file")
     return arrayOfArrays
@@ -145,5 +143,6 @@ if __name__ == "__main__":
     dummyData = [[3, 2, 5, 4, 6, 2, 34, 5, 2, 3, 5, 7, 2, 3, 5]]
 
     data = readAndParse(firebaseFilePath)
+    # print(data)
     create_train(data, modalDataPath)
     prediction = load_model_and_predict(dummyData, modalDataPath)
